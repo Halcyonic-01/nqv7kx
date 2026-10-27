@@ -1,0 +1,7 @@
+# Context for the backend image (repo root). Only backend/ and data/ are needed.
+*
+!backend/pyproject.toml
+!backend/uv.lock
+!backend/src/
+!data/
+**/__pycache__

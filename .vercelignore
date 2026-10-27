@@ -1,0 +1,15 @@
+# Files never uploaded to Vercel (the build installs its own node_modules).
+.git
+.claude
+.vercel
+.DS_Store
+*.docx
+IMPLEMENTATION_PLAN.md
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+backend/tests
