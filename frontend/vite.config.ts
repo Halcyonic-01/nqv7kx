@@ -1,8 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// The API is always same-origin under /api: nginx proxies it in Docker,
-// Vercel rewrites it in production, and this proxy does it in local dev.
+// Same-origin /api in dev, like nginx and Vercel.
 export default defineConfig({
   plugins: [react()],
   server: {

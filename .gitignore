@@ -24,6 +24,6 @@ dist/
 .vscode/*
 !.vscode/extensions.json
 
-# Private working material: keep out of the public repo
+# Private, not for the public repo
 *.docx
 IMPLEMENTATION_PLAN.md

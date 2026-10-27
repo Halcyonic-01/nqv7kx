@@ -1,5 +1,4 @@
 """Beaufort: day-ahead wind forecast monitoring for GB."""
 
-# Kept in sync with pyproject.toml by hand: the Vercel function imports the
-# package from source, so importlib.metadata cannot be relied on there.
+# Sync with pyproject.toml (no package metadata on Vercel).
 __version__ = "0.1.0"

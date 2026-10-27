@@ -7,8 +7,7 @@ API_PREFIX = "/api/v1"
 
 
 def create_app() -> FastAPI:
-    # Docs live under /api so they are reachable through the same proxy rule
-    # (nginx locally, Vercel rewrites in production) as the API itself.
+    # Docs under /api so the same proxy rule serves them.
     app = FastAPI(
         title="Beaufort API",
         version=__version__,

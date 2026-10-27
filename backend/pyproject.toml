@@ -35,5 +35,5 @@ packages = ["beaufort"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-# Starlette's TestClient now nudges towards `httpx2`; httpx works fine for tests.
+# Silence Starlette's httpx2 nudge.
 filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]

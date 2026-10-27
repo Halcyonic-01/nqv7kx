@@ -1,4 +1,4 @@
-# Context for the backend image (repo root). Only backend/ and data/ are needed.
+# Backend image: only backend/ and data/.
 *
 !backend/pyproject.toml
 !backend/uv.lock

@@ -1,4 +1,4 @@
-# Files never uploaded to Vercel (the build installs its own node_modules).
+# Not uploaded to Vercel.
 .git
 .claude
 .vercel

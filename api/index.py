@@ -1,8 +1,4 @@
-"""Vercel entrypoint: serves the FastAPI app as a Python function.
-
-Vercel rewrites /api/* here (see vercel.json) and passes the original path through,
-so the app's own /api/v1/... routes match unchanged.
-"""
+"""Vercel entrypoint for the FastAPI app."""
 
 import sys
 from pathlib import Path

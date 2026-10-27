@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Build context is the repository root so the image can also ship data/ (snapshot).
+# Context: repo root (to include data/).
 
 FROM python:3.12-slim AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.10.10 /uv /bin/uv
@@ -8,7 +8,7 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never
 WORKDIR /app
 
-# Dependencies first, so source edits don't invalidate this layer.
+# Deps first for layer caching.
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-install-project
