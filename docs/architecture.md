@@ -4,14 +4,14 @@
 
 ```mermaid
 flowchart LR
-    E[Elexon BMRS API<br/>WINDFOR · FUELHH] -->|ingest CLI<br/>offline| S[(data/beaufort.sqlite<br/>+ manifest.json)]
-    S -->|loaded once per process| B[FastAPI backend<br/>domain · services · api]
-    B -->|same-origin /api/v1| F[React frontend]
-    subgraph Production — Vercel
-      CDN[CDN: static build + cached API responses] --- FN[Python function api/index.py]
+    E["Elexon BMRS API<br/>WINDFOR, FUELHH"] -->|"ingest CLI (offline)"| S[("data/beaufort.sqlite<br/>+ manifest.json")]
+    S -->|"loaded once per process"| B["FastAPI backend<br/>domain, services, api"]
+    B -->|"same-origin /api/v1"| F["React frontend"]
+    subgraph prod["Production: Vercel"]
+      CDN["CDN: static build + cached API responses"] --- FN["Python function api/index.py"]
     end
-    subgraph Local — Docker Compose
-      N[web: nginx] --- A[api: uvicorn]
+    subgraph local["Local: Docker Compose"]
+      N["web: nginx"] --- A["api: uvicorn"]
     end
 ```
 
