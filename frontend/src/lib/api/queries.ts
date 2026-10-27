@@ -24,8 +24,8 @@ export const dayRunsQuery = (date: string, gateClosure: string) =>
 
 export const useMeta = () => useQuery(metaQuery)
 
-export const useDayAhead = (date: string, gateClosure: string) =>
-  useQuery({ ...dayAheadQuery(date, gateClosure), placeholderData: keepPreviousData })
+export const useDayAhead = (date: string, gateClosure: string, enabled = true) =>
+  useQuery({ ...dayAheadQuery(date, gateClosure), enabled, placeholderData: keepPreviousData })
 
 export const useDayRuns = (date: string, gateClosure: string, enabled: boolean) =>
   useQuery({ ...dayRunsQuery(date, gateClosure), enabled, placeholderData: keepPreviousData })

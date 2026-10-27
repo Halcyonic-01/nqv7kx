@@ -9,8 +9,15 @@ export function DataPopover() {
 
   return (
     <Popover.Root>
-      <Popover.Trigger className="rounded-md px-2.5 py-1 text-[13px] text-ink-2 hover:bg-hover hover:text-ink">
-        Data &amp; method
+      <Popover.Trigger
+        aria-label="Data and method"
+        className="grid place-items-center rounded-md px-1.5 py-1 text-[13px] text-ink-2 hover:bg-hover hover:text-ink sm:px-2.5"
+      >
+        <span className="hidden sm:inline">Data &amp; method</span>
+        <svg viewBox="0 0 16 16" className="size-4 sm:hidden" aria-hidden>
+          <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M8 7.2v3.8M8 5v.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content

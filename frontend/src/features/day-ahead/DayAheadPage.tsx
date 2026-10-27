@@ -63,7 +63,7 @@ export function DayAheadPage() {
   const last = meta?.coverage.last ?? ''
   const valid = isIsoDate(date) && (!meta || inRange(date, first, last))
 
-  const day = useDayAhead(date, gateClosure)
+  const day = useDayAhead(date, gateClosure, valid)
   const runs = useDayRuns(date, gateClosure, showRuns && valid)
   const tokens = useChartTokens()
 
@@ -86,9 +86,14 @@ export function DayAheadPage() {
   }, [date])
 
   const data = day.data
+  // While a new day loads, the previous day's runs must not be drawn on it.
+  const dayRuns =
+    runs.data && data && runs.data.delivery_date === data.delivery_date && runs.data.gate_closure === data.gate_closure
+      ? runs.data
+      : undefined
   const genOption = useMemo(
-    () => (data ? generationOption(data, runs.data, { band, adjusted, runs: showRuns }, tokens) : null),
-    [data, runs.data, band, adjusted, showRuns, tokens],
+    () => (data ? generationOption(data, dayRuns, { band, adjusted, runs: showRuns }, tokens) : null),
+    [data, dayRuns, band, adjusted, showRuns, tokens],
   )
   const errOption = useMemo(() => (data ? errorOption(data, tokens) : null), [data, tokens])
 

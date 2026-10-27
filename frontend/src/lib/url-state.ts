@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 import { useSearchParams } from 'react-router'
+import { isIsoDate } from './time'
 
 export const DEFAULT_GATE_CLOSURE = '09:20'
-const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/
+// Gate closure must fall before delivery starts at 23:00 on D-1.
+const HHMM = /^([01]\d|2[0-2]):[0-5]\d$/
 
 // Read the live URL: the hook's params are stale between quick successive updates.
 const live = () => new URLSearchParams(window.location.search)
@@ -52,7 +54,7 @@ export function useUrlFlag(key: string, fallback: boolean): [boolean, (value: bo
 /** ?from=&to= period, clamped to coverage; defaults to the whole window. */
 export function usePeriod(first: string, last: string): [string, string, (from: string, to: string) => void] {
   const [params, setParams] = useSearchParams()
-  const ok = (d: string | null): d is string => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= first && d <= last
+  const ok = (d: string | null): d is string => isIsoDate(d) && d >= first && d <= last
   const rawFrom = params.get('from')
   const rawTo = params.get('to')
   let from = ok(rawFrom) ? rawFrom : first

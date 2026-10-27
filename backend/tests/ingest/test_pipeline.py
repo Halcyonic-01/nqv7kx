@@ -3,7 +3,10 @@ import sqlite3
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+import pytest
+
 from beaufort.config import IngestWindow
+from beaufort.elexon.client import ElexonError
 from beaufort.ingest.pipeline import run_ingest
 
 from .fakes import FakeElexon, fuelhh_day, windfor_run
@@ -45,3 +48,15 @@ def test_ingest_is_reproducible(tmp_path: Path) -> None:
 
     assert first["data_sha256"] == second["data_sha256"]
     assert first["rows"] == second["rows"]
+
+
+def test_failed_ingest_keeps_previous_snapshot(tmp_path: Path) -> None:
+    run_ingest(_fake().client(), tmp_path, WINDOW)
+    before = (tmp_path / "beaufort.sqlite").read_bytes()
+
+    broken = FakeElexon(fail_first=100)
+    with pytest.raises(ElexonError):
+        run_ingest(broken.client(max_attempts=1), tmp_path, WINDOW)
+
+    assert (tmp_path / "beaufort.sqlite").read_bytes() == before
+    assert not list(tmp_path.glob("*.tmp"))

@@ -58,8 +58,11 @@ def run_ingest(client: ElexonClient, out_dir: Path, window: IngestWindow) -> dic
             "data_sha256": db.content_sha256(conn),
             "quality": quality_report(conn, window),
         }
-    finally:
+    except BaseException:
         conn.close()
+        tmp_path.unlink(missing_ok=True)
+        raise
+    conn.close()
 
     os.replace(tmp_path, db_path)
     (out_dir / MANIFEST_FILENAME).write_text(json.dumps(manifest, indent=2) + "\n")

@@ -66,3 +66,16 @@ def test_responses_are_cacheable_with_etag(client: TestClient) -> None:
     assert "s-maxage" in r.headers["cache-control"]
     assert client.get("/api/v1/meta", headers={"If-None-Match": etag}).status_code == 304
     assert "etag" not in client.get("/api/v1/health").headers
+
+
+@pytest.mark.parametrize("gc", ["23:00", "23:59"])
+def test_gate_closure_after_delivery_start_is_rejected(client: TestClient, gc: str) -> None:
+    r = client.get("/api/v1/day-ahead", params={"delivery_date": "2026-01-12", "gate_closure": gc})
+    assert r.status_code == 422
+    assert r.json()["title"] == "Invalid gate closure"
+
+
+def test_unknown_route_is_problem_json(client: TestClient) -> None:
+    r = client.get("/api/v1/nope")
+    assert r.status_code == 404
+    assert r.headers["content-type"] == "application/problem+json"

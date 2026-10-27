@@ -101,25 +101,25 @@ The January figures above are pinned as regression tests in `backend/tests/servi
 
 ## API
 
-All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad input returns 422 with an `application/problem+json` body. Responses carry an `ETag` and are cached by the CDN.
+All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad input returns 422 and unknown routes 404, both with an `application/problem+json` body. Responses carry an `ETag` and are cached by the CDN.
 
 | Endpoint | Params |
 |---|---|
 | `/api/v1/meta` | Coverage, gate-closure presets, run schedule, snapshot manifest |
-| `/api/v1/day-ahead` | `delivery_date`, `gate_closure` (HH:MM, default 09:20) |
+| `/api/v1/day-ahead` | `delivery_date`, `gate_closure` (HH:MM UK time on D-1, before 23:00; default 09:20) |
 | `/api/v1/day-ahead/runs` | `delivery_date`, `gate_closure`. Every run for the day, flagged available or not at gate closure |
 | `/api/v1/accuracy` | `from`, `to`, `gate_closure`. Summary, adjusted vs raw, daily, by hour, by forecast level, histogram |
 | `/api/v1/accuracy/lead-time` | `from`, `to`, `max_h` (≤ 60) |
 
 ## Testing and CI
 
-- **Backend (pytest, 53 tests):**
+- **Backend (pytest, 58 tests):**
   - domain unit tests, including clock-change days and the gate-closure edge cases;
   - a Hypothesis property test of forecast selection against brute force;
   - golden January numbers;
   - an ingest pipeline test against a mocked Elexon API;
   - API contract tests (problem+json errors, ETag/304).
-- **Frontend (Vitest, 13 tests):** formatting and UK-time handling, URL/period logic, and page tests with a mocked API.
+- **Frontend (Vitest, 14 tests):** formatting and UK-time handling, URL/period logic, and page tests with a mocked API.
 - **GitHub Actions** (`.github/workflows/ci.yml`), on every push:
   - ruff, strict mypy and pytest;
   - oxlint, the TypeScript build and Vitest;

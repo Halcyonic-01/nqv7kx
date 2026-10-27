@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, time
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query
 from beaufort.api.deps import AnalyticsDep
 from beaufort.api.errors import ProblemError
 from beaufort.config import DEFAULT_GATE_CLOSURE
-from beaufort.domain.time import parse_hhmm
+from beaufort.domain.time import DELIVERY_DAY_START, parse_hhmm
 from beaufort.services import models as m
 from beaufort.services.analytics import Analytics
 
@@ -18,6 +18,16 @@ GateClosure = Annotated[
 ]
 From = Annotated[date | None, Query(alias="from")]
 To = Annotated[date | None, Query(alias="to")]
+
+
+def _gate_closure(value: str) -> time:
+    at = parse_hhmm(value)
+    if at >= DELIVERY_DAY_START:
+        start = DELIVERY_DAY_START.strftime("%H:%M")
+        raise ProblemError(
+            422, "Invalid gate closure", f"Gate closure must be before {start} on D-1"
+        )
+    return at
 
 
 def _check_day(a: Analytics, day: date) -> None:
@@ -44,7 +54,7 @@ def day_ahead(
     a: AnalyticsDep, delivery_date: date, gate_closure: GateClosure = DEFAULT_GATE_CLOSURE
 ) -> m.DayAhead:
     _check_day(a, delivery_date)
-    return a.day_ahead(delivery_date, parse_hhmm(gate_closure))
+    return a.day_ahead(delivery_date, _gate_closure(gate_closure))
 
 
 @router.get("/day-ahead/runs")
@@ -52,7 +62,7 @@ def day_ahead_runs(
     a: AnalyticsDep, delivery_date: date, gate_closure: GateClosure = DEFAULT_GATE_CLOSURE
 ) -> m.DayRuns:
     _check_day(a, delivery_date)
-    return a.runs(delivery_date, parse_hhmm(gate_closure))
+    return a.runs(delivery_date, _gate_closure(gate_closure))
 
 
 @router.get("/accuracy")
@@ -62,7 +72,7 @@ def accuracy(
     last: To = None,
     gate_closure: GateClosure = DEFAULT_GATE_CLOSURE,
 ) -> m.Accuracy:
-    return a.accuracy(*_range(a, first, last), parse_hhmm(gate_closure))
+    return a.accuracy(*_range(a, first, last), _gate_closure(gate_closure))
 
 
 @router.get("/accuracy/lead-time")

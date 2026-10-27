@@ -72,3 +72,10 @@ def test_lead_time_curve(analytics: Analytics) -> None:
     rows = {r.horizon_h: r for r in analytics.lead_time(DELIVERY_FIRST, DELIVERY_LAST).rows}
     assert (rows[0].mae_mw, rows[24].mae_mw, rows[48].mae_mw) == (1684, 1937, 2301)
     assert rows[48].n == 589
+
+
+def test_daily_energy_matches_day_ahead_summary(analytics: Analytics) -> None:
+    acc = analytics.accuracy(date(2026, 1, 28), date(2026, 1, 28), EPEX)
+    day = analytics.day_ahead(date(2026, 1, 28), EPEX)
+    assert acc.daily[0].actual_gwh == day.summary.actual_gwh == 142.5
+    assert acc.daily[0].forecast_gwh == day.summary.forecast_gwh == 270.8

@@ -27,7 +27,7 @@ Base URL: `https://data.elexon.co.uk/bmrs/api/v1`. No other data is used.
 | Term | Definition |
 |---|---|
 | Delivery day D | 23:00 D−1 to 23:00 D, UK local. This is the GB day-ahead auction day and the EFA day: 24 hourly targets, or 23/25 on clock-change days |
-| Gate closure | 09:20 UK on D−1 for the EPEX GB 60-min auction (default); 09:50 for N2EX |
+| Gate closure | 09:20 UK on D−1 for the EPEX GB 60-min auction (default); 09:50 for N2EX. Any HH:MM before 23:00 is accepted, since a later cutoff would fall inside the delivery day |
 | Window | Decisions made 1–31 Jan 2026, so delivery days 2 Jan to 1 Feb 2026 |
 | Forecast used for hour T | The WINDFOR point for `startTime = T` from the latest run with `publishTime ≤ gate closure` **and** `publishTime < T` |
 | Lead time | T − `publishTime` of that run. At 09:20 it is 15.5–38.5 h (the 07:30 run); at 09:50 it is 13.5–36.5 h (the 09:30 run) |

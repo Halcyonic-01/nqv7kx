@@ -36,7 +36,7 @@ export function TopBar() {
           <NavLink
             to={`/day-ahead${search}`}
             className={({ isActive }) =>
-              `whitespace-nowrap rounded-md px-2.5 py-1 ${isActive ? 'bg-hover font-medium text-ink' : 'text-ink-2 hover:text-ink'}`
+              `whitespace-nowrap rounded-md px-2 py-1 sm:px-2.5 ${isActive ? 'bg-hover font-medium text-ink' : 'text-ink-2 hover:text-ink'}`
             }
           >
             Day-ahead
@@ -44,13 +44,13 @@ export function TopBar() {
           <NavLink
             to={`/accuracy${search}`}
             className={({ isActive }) =>
-              `whitespace-nowrap rounded-md px-2.5 py-1 ${isActive ? 'bg-hover font-medium text-ink' : 'text-ink-2 hover:text-ink'}`
+              `whitespace-nowrap rounded-md px-2 py-1 sm:px-2.5 ${isActive ? 'bg-hover font-medium text-ink' : 'text-ink-2 hover:text-ink'}`
             }
           >
             Accuracy
           </NavLink>
         </nav>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
           <span className="hidden text-[13px] text-muted md:inline">Gate closure</span>
           <Segmented
             label="Gate closure"
@@ -62,9 +62,7 @@ export function TopBar() {
               hint: p.time,
             }))}
           />
-          <span className="hidden sm:inline">
-            <DataPopover />
-          </span>
+          <DataPopover />
         </div>
       </div>
     </header>

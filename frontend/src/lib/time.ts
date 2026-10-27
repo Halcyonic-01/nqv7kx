@@ -9,8 +9,12 @@ export function hoursBetween(from: string, to: string): number {
   return (Date.parse(to) - Date.parse(from)) / 3_600_000
 }
 
-export const isIsoDate = (value: string | undefined): value is string =>
-  !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))
+/** Strict "YYYY-MM-DD": rejects dates JS would roll over, like 2026-02-30. */
+export function isIsoDate(value: string | null | undefined): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const d = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value
+}
 
 export const inRange = (date: string, first: string, last: string) => date >= first && date <= last
 

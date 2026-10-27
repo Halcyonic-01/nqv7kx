@@ -19,7 +19,7 @@ export function Segmented({ label, options, value, onChange }: Props) {
             aria-pressed={active}
             aria-label={o.hint ? `${o.label} ${o.hint}` : o.label}
             onClick={() => onChange(o.value)}
-            className={`flex items-baseline gap-1.5 rounded-[5px] px-2.5 py-1 text-[13px] transition-colors ${
+            className={`flex items-baseline gap-1.5 rounded-[5px] px-2 py-1 text-[13px] sm:px-2.5 transition-colors ${
               active ? 'bg-raised text-ink shadow-[0_0_0_1px_var(--hairline)]' : 'text-ink-2 hover:bg-hover'
             }`}
           >

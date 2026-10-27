@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
 PROBLEM_JSON = "application/problem+json"
 
@@ -22,6 +23,10 @@ def install(app: FastAPI) -> None:
     @app.exception_handler(ProblemError)
     async def _on_problem(_: Request, exc: ProblemError) -> JSONResponse:
         return _problem(exc.status, exc.title, exc.detail)
+
+    @app.exception_handler(HTTPException)
+    async def _on_http(_: Request, exc: HTTPException) -> JSONResponse:
+        return _problem(exc.status_code, str(exc.detail), str(exc.detail))
 
     @app.exception_handler(RequestValidationError)
     async def _on_invalid(_: Request, exc: RequestValidationError) -> JSONResponse:

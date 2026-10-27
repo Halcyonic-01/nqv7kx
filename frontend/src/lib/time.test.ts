@@ -24,3 +24,13 @@ describe('time', () => {
     expect(jan.flat().filter(Boolean)).toHaveLength(31)
   })
 })
+
+describe('isIsoDate', () => {
+  it('rejects impossible and malformed dates without throwing', () => {
+    expect(isIsoDate('2026-02-30')).toBe(false)
+    expect(isIsoDate('2026-13-01')).toBe(false)
+    expect(isIsoDate('2026-1-5')).toBe(false)
+    expect(isIsoDate(null)).toBe(false)
+    expect(isIsoDate('2028-02-29')).toBe(true)
+  })
+})

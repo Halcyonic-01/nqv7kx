@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -22,7 +23,8 @@ def _utc(seconds: pd.Series) -> pd.Series:
 
 
 def load_dataset(data_dir: Path) -> Dataset:
-    with sqlite3.connect(f"file:{data_dir / DB_FILENAME}?mode=ro", uri=True) as conn:
+    uri = f"{(data_dir / DB_FILENAME).resolve().as_uri()}?mode=ro"
+    with closing(sqlite3.connect(uri, uri=True)) as conn:
         forecasts = pd.read_sql_query(
             "SELECT publish_time, start_time, generation_mw FROM wind_forecast", conn
         )

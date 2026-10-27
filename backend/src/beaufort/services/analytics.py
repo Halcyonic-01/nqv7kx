@@ -3,7 +3,6 @@ from datetime import date, time, timedelta
 from itertools import pairwise
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from beaufort.config import (
@@ -62,6 +61,10 @@ class Analytics:
         self.first = first
         self.last = last
         self._run_times = pd.DatetimeIndex(ds.forecasts["publish_time"].unique()).sort_values()
+        # Outturn energy per delivery day from half-hours (the day starts 23:00 UK on D-1).
+        a = ds.actuals
+        day_of = (a["start_time"].dt.tz_convert(LONDON) + pd.Timedelta(hours=1)).dt.date
+        self._actual_gwh = (a["generation_mw"] * 0.5 / 1000).groupby(day_of).sum()
         self._pairs: dict[time, pd.DataFrame] = {}
         self._lead: dict[tuple[date, date, int], m.LeadTime] = {}
 
@@ -116,6 +119,7 @@ class Analytics:
         cutoff = gate_closure(day, gc)
         a = self.ds.actuals
         hh = a[(a["start_time"] >= start) & (a["start_time"] < end)]
+        actual_gwh = self._actual_gwh.get(day)
 
         used = rows.dropna(subset=["publish_time"])
         run_used = (
@@ -148,8 +152,8 @@ class Analytics:
         es = error_summary(rows["forecast_mw"], rows["actual_mw"])
         adj = error_summary(rows["adjusted_mw"], rows["actual_mw"])
         summary = m.DaySummary(
-            forecast_gwh=round(rows["forecast_mw"].sum() / 1000, 1) if used.size else None,
-            actual_gwh=round(hh["generation_mw"].sum() * 0.5 / 1000, 1) if len(hh) else None,
+            forecast_gwh=round(rows["forecast_mw"].sum() / 1000, 1) if len(used) else None,
+            actual_gwh=round(float(actual_gwh), 1) if actual_gwh is not None else None,
             mae_mw=_mw(es.mae_mw) if es else None,
             bias_mw=_mw(es.bias_mw) if es else None,
             max_shortfall_mw=_mw(err.max()),
@@ -226,6 +230,8 @@ class Analytics:
             else None
         )
 
+        # Energy uses the same definitions as the day-ahead summary.
+        forecast_gwh = p.groupby("delivery_date")["forecast_mw"].sum() / 1000
         daily = []
         for d, g in valid.groupby("delivery_date", sort=True):
             daily.append(
@@ -234,8 +240,8 @@ class Analytics:
                     n=len(g),
                     mae_mw=round(g["error_mw"].abs().mean()),
                     bias_mw=round(g["error_mw"].mean()),
-                    forecast_gwh=round(g["forecast_mw"].sum() / 1000, 1),
-                    actual_gwh=round(g["actual_mw"].sum() / 1000, 1),
+                    forecast_gwh=round(float(forecast_gwh[d]), 1),
+                    actual_gwh=round(float(self._actual_gwh.get(d, 0.0)), 1),
                 )
             )
 
@@ -263,7 +269,7 @@ class Analytics:
             if hi is not None:
                 in_bin &= valid["forecast_mw"] < hi
             g = valid[in_bin]
-            if len(g):
+            if len(g) and g["forecast_mw"].sum() > 0:
                 label = f"{lo // 1000}–{hi // 1000} GW" if hi is not None else f"≥{lo // 1000} GW"
                 by_level.append(
                     m.LevelRow(
@@ -303,7 +309,8 @@ class Analytics:
         key = (first, last, max_h)
         if key in self._lead:
             return self._lead[key]
-        starts = pd.DatetimeIndex(np.concatenate([hourly_targets(d) for d in days(first, last)]))
+        span = days(first, last)
+        starts = hourly_targets(span[0]).append([hourly_targets(d) for d in span[1:]])
         targets = pd.concat(
             [
                 pd.DataFrame(
