@@ -28,3 +28,21 @@ DEFAULT_WINDOW = IngestWindow(
     actual_date_from=date(2025, 12, 31),
     actual_date_to=date(2026, 2, 2),
 )
+
+# Delivery days for decisions made 1-31 Jan 2026.
+DELIVERY_FIRST = date(2026, 1, 2)
+DELIVERY_LAST = date(2026, 2, 1)
+
+
+@dataclass(frozen=True)
+class GateClosurePreset:
+    id: str
+    label: str
+    time: str
+
+
+GATE_CLOSURES = (
+    GateClosurePreset("epex", "EPEX GB 60-min", "09:20"),
+    GateClosurePreset("n2ex", "N2EX", "09:50"),
+)
+DEFAULT_GATE_CLOSURE = GATE_CLOSURES[0].time

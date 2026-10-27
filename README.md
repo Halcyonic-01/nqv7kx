@@ -4,7 +4,7 @@ Day-ahead wind forecast monitoring for GB. For each delivery day it shows the la
 
 **Live app:** <https://nqv7kx.vercel.app>
 
-> Status: walking skeleton (API health check + web shell). Analytics land in later milestones.
+> Status: analytics API complete; the web UI is next.
 
 ## Run it
 
@@ -48,17 +48,51 @@ Current snapshot:
 - No gaps.
 - One late run (15 Jan 12:25 instead of 11:30).
 
+## Method
+
+| Concept | Definition |
+|---|---|
+| Delivery day D | 23:00 D-1 → 23:00 D, UK local (GB day-ahead auction / EFA day) |
+| Gate closure | 09:20 UK on D-1 (EPEX GB 60-min, default) or 09:50 (N2EX) |
+| Forecast used for hour T | Latest WINDFOR run with `publishTime ≤ gate closure` and `publishTime < T` |
+| Actual for hour T | FUELHH `WIND` half-hour starting at T |
+| Error | forecast − actual (positive = over-forecast = wind shortfall vs plan) |
+| Metrics | MAE, RMSE, bias, WAPE, P50/P90/P99 abs error, share of over-forecast hours. No MAPE: it explodes at low wind |
+| Lead-time curve | Same rule with cutoff T − H for H = 0…48 h |
+| Bias-adjusted forecast | Forecast × Σactual/Σforecast over the previous 7 days of decision-time pairs. Uses only actuals published before gate closure, needs ≥ 72 h of history |
+| Uncertainty band | Forecast × P10/P90 of hourly actual/forecast ratios in the same trailing window |
+
+January 2026 results (09:20 gate closure, 744 delivery hours). These are pinned in `backend/tests/services/test_golden.py`.
+- **Error:** MAE 2.02 GW, RMSE 2.49 GW, bias +1.75 GW, P90 |error| 4.15 GW, WAPE 17.9%.
+- **Over-forecast:** the forecast is too high in 84.9% of hours.
+- **N2EX:** the 09:30 run lowers MAE to 1.99 GW.
+- **Bias adjustment:** MAE falls from 2.03 to 1.33 GW (−35%) over the 648 hours that have enough history.
+
+## API
+
+All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad input returns 422 with an `application/problem+json` body. Responses carry an `ETag` and are cached by the CDN.
+
+| Endpoint | Params |
+|---|---|
+| `/api/v1/meta` | Coverage, gate-closure presets, run schedule, snapshot manifest |
+| `/api/v1/day-ahead` | `delivery_date`, `gate_closure` (HH:MM, default 09:20) |
+| `/api/v1/day-ahead/runs` | `delivery_date`, `gate_closure`. Every run for the day, flagged available or not at gate closure |
+| `/api/v1/accuracy` | `from`, `to`, `gate_closure`. Summary, adjusted vs raw, daily, by hour, by forecast level, histogram |
+| `/api/v1/accuracy/lead-time` | `from`, `to`, `max_h` (≤ 60) |
+
 ## Repository layout
 
 | Path | Purpose |
 |---|---|
-| `backend/` | Python package `beaufort` (FastAPI app, ingest, later analytics), tests, Dockerfile |
+| `backend/` | Python package `beaufort` (FastAPI app, ingest, analytics), tests, Dockerfile |
 | `backend/src/beaufort/api/` | App factory and HTTP routes (`/api/v1/*`) |
 | `backend/src/beaufort/elexon/` | BMRS client (chunking, retries) and validated row models |
-| `backend/src/beaufort/store/` | SQLite schema, upserts, content hash |
+| `backend/src/beaufort/domain/` | Pure logic: delivery windows, forecast selection, metrics, calibration |
+| `backend/src/beaufort/services/` | Use cases per screen (`Analytics`) and response models |
+| `backend/src/beaufort/store/` | SQLite schema, upserts, content hash, dataset loader |
 | `backend/src/beaufort/ingest/` | Ingest CLI, pipeline and data-quality report |
 | `backend/src/beaufort/config.py` | Data paths and the ingest window |
-| `backend/tests/` | pytest suite (Elexon API mocked with `httpx.MockTransport`) |
+| `backend/tests/` | pytest: unit, property (Hypothesis), golden numbers, API contract; Elexon mocked with `httpx.MockTransport` |
 | `data/` | Committed snapshot (`beaufort.sqlite`) and `manifest.json` |
 | `frontend/` | React + TypeScript (Vite) web app, nginx config and Dockerfile for the container |
 | `api/index.py` | Vercel Python function entrypoint, re-exports the FastAPI app |

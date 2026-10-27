@@ -6,12 +6,15 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.162.0",
     "httpx>=0.28.1",
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
     "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
+    "hypothesis>=6.170.12",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.17.3",
@@ -27,6 +30,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["RUF001"]  # en dashes in UI labels
 
 [tool.mypy]
 strict = true
@@ -38,3 +42,7 @@ testpaths = ["tests"]
 addopts = "-q"
 # Silence Starlette's httpx2 nudge.
 filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+
+[[tool.mypy.overrides]]
+module = ["pandas", "pandas.*"]
+ignore_missing_imports = true

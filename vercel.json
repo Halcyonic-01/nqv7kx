@@ -7,7 +7,7 @@
   "regions": ["lhr1"],
   "functions": {
     "api/index.py": {
-      "includeFiles": "backend/src/**",
+      "includeFiles": "{backend/src/**,data/**}",
       "excludeFiles": "{frontend/**,backend/tests/**,backend/.venv/**,**/__pycache__/**}"
     }
   },

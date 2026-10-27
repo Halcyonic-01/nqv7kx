@@ -22,8 +22,10 @@ FROM python:3.12-slim
 RUN useradd --create-home --uid 10001 app
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
+COPY data /app/data
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    BEAUFORT_DATA_DIR=/app/data
 USER app
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
