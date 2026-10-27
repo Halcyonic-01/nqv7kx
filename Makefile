@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install dev dev-api dev-web test lint fmt ingest requirements up down
+.PHONY: help install dev dev-api dev-web test lint fmt types ingest requirements up down
 
 BACKEND := uv run --directory backend
 
@@ -21,6 +21,7 @@ dev-web:
 
 test: ## Run all tests
 	$(BACKEND) pytest
+	npm test --prefix frontend
 
 lint: ## Lint and type-check everything
 	$(BACKEND) ruff check .
@@ -32,6 +33,10 @@ lint: ## Lint and type-check everything
 fmt: ## Auto-format backend code
 	$(BACKEND) ruff format .
 	$(BACKEND) ruff check --fix .
+
+types: ## Regenerate frontend API types from the FastAPI schema
+	$(BACKEND) python -c "import json; from beaufort.api.app import app; print(json.dumps(app.openapi()))" > /tmp/beaufort-openapi.json
+	npx --yes openapi-typescript@7.13.0 /tmp/beaufort-openapi.json -o frontend/src/lib/api/schema.d.ts
 
 ingest: ## Rebuild data/ snapshot from the Elexon API
 	$(BACKEND) python -m beaufort.ingest

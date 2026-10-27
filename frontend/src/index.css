@@ -1,36 +1,80 @@
-:root {
-  --surface: #fafaf9;
-  --ink: #1c1917;
-  --ink-muted: #78716c;
-  --hairline: #e7e5e4;
-  --ok: #15803d;
-  --fail: #b45309;
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
 
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--ink);
-  background: var(--surface);
-  font-variant-numeric: tabular-nums;
-  -webkit-font-smoothing: antialiased;
+/* Tokens are the single source for UI and chart colours (see charts/theme.ts). */
+@theme inline {
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --color-page: var(--page);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-hairline: var(--hairline);
+  --color-grid: var(--grid);
+  --color-hover: var(--hover);
+  --color-focus: var(--focus);
+  --color-fc: var(--fc);
+  --color-act: var(--act);
+  --color-adj: var(--adj);
+  --color-over: var(--over);
+  --color-under: var(--under);
+  --color-run: var(--run);
+}
+
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --raised: #ffffff;
+  --ink: #1a1917;
+  --ink-2: #52514e;
+  --muted: #7a7873;
+  --hairline: #e4e3dd;
+  --grid: #ebeae4;
+  --axis: #c3c2b7;
+  --hover: rgba(11, 11, 11, 0.04);
+  --focus: #2a78d6;
+  --fc: #2a78d6;
+  --act: #1a1917;
+  --adj: #1baf7a;
+  --over: #eb6834;
+  --under: #6250d6;
+  --run: #b4b2aa;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --surface: #0c0a09;
-    --ink: #f5f5f4;
-    --ink-muted: #a8a29e;
-    --hairline: #292524;
-    --ok: #4ade80;
-    --fail: #fbbf24;
+    color-scheme: dark;
+    --page: #121211;
+    --raised: #1c1c1b;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --muted: #8f8d87;
+    --hairline: #2c2c2a;
+    --grid: #262624;
+    --axis: #44433f;
+    --hover: rgba(255, 255, 255, 0.05);
+    --focus: #3987e5;
+    --fc: #3987e5;
+    --act: #ecebe7;
+    --adj: #199e70;
+    --over: #d95926;
+    --under: #9085e9;
+    --run: #55544f;
   }
-}
-
-* {
-  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: var(--surface);
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

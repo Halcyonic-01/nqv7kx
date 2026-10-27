@@ -4,7 +4,7 @@ Day-ahead wind forecast monitoring for GB. For each delivery day it shows the la
 
 **Live app:** <https://nqv7kx.vercel.app>
 
-> Status: analytics API complete; the web UI is next.
+> Status: Day-ahead view live; the Accuracy view is next.
 
 ## Run it
 
@@ -23,11 +23,27 @@ Requires Python 3.12 with [uv](https://docs.astral.sh/uv/), and Node 22.
 ```bash
 make install
 make dev        # API on :8000, web on :5173 (Vite proxies /api to the API)
-make test
+make test       # pytest + vitest
 make lint
+make types      # regenerate frontend API types from the FastAPI schema
 ```
 
 API docs: `/api/docs` (Swagger UI), `/api/openapi.json`.
+
+## Web app
+
+**Day-ahead** (`/day-ahead/:date`) answers "what will I plan against, and how did it turn out?" for one delivery day:
+- **Header line:** the gate closure, the forecast run used, its lead time, and the next run (which arrives too late for the decision).
+- **Summary figures:** forecast vs outturn energy, MAE and bias, peak shortfall, and the bias-adjusted MAE.
+- **Main chart:** hourly forecast against half-hourly outturn. Toggles add the P10–P90 range, the bias-adjusted line, and the other runs (solid if published before gate closure, dashed if after).
+- **Error strip:** forecast error per hour, with a crosshair linked to the main chart.
+- **Hourly data table.**
+
+All state is in the URL (`?gc=09:50&adj=1&runs=1&band=0`), so every view can be shared as a link. The ← and → keys step through days, and the neighbouring days are prefetched. The page follows the system light/dark setting.
+
+Stack: React 19, TypeScript, Vite, React Router, TanStack Query, Tailwind v4, Radix Popover, ECharts.
+- **Colours:** defined once as CSS tokens and read by the ECharts theme. The series palette was checked for colour-blind separation and contrast in both themes.
+- **API types:** generated from the backend OpenAPI schema (`make types`).
 
 ## Data
 
@@ -95,6 +111,10 @@ All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad
 | `backend/tests/` | pytest: unit, property (Hypothesis), golden numbers, API contract; Elexon mocked with `httpx.MockTransport` |
 | `data/` | Committed snapshot (`beaufort.sqlite`) and `manifest.json` |
 | `frontend/` | React + TypeScript (Vite) web app, nginx config and Dockerfile for the container |
+| `frontend/src/app/` | Routes, app shell, top bar (gate-closure switch, data & method popover) |
+| `frontend/src/features/day-ahead/` | Day-ahead page, chart option builders, stat strip, date picker, hourly table |
+| `frontend/src/components/` | ECharts wrapper and token-driven theme; small UI primitives |
+| `frontend/src/lib/` | API client and queries, generated `schema.d.ts`, formatting, time, URL state |
 | `api/index.py` | Vercel Python function entrypoint, re-exports the FastAPI app |
 | `requirements.txt` | Runtime dependencies for the Vercel function, exported from `backend/uv.lock` (`make requirements`) |
 | `vercel.json` | Vercel build, function bundling and rewrites (`/api/*` → function, everything else → SPA) |
