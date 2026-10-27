@@ -48,3 +48,39 @@ export function useUrlFlag(key: string, fallback: boolean): [boolean, (value: bo
   )
   return [value, set]
 }
+
+/** ?from=&to= period, clamped to coverage; defaults to the whole window. */
+export function usePeriod(first: string, last: string): [string, string, (from: string, to: string) => void] {
+  const [params, setParams] = useSearchParams()
+  const ok = (d: string | null): d is string => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= first && d <= last
+  const rawFrom = params.get('from')
+  const rawTo = params.get('to')
+  let from = ok(rawFrom) ? rawFrom : first
+  let to = ok(rawTo) ? rawTo : last
+  if (from > to) [from, to] = [first, last]
+  const set = useCallback(
+    (nextFrom: string, nextTo: string) =>
+      setParams(
+        () => {
+          const p = live()
+          if (nextFrom === first && nextTo === last) {
+            p.delete('from')
+            p.delete('to')
+          } else {
+            p.set('from', nextFrom)
+            p.set('to', nextTo)
+          }
+          return p
+        },
+        { replace: true },
+      ),
+    [setParams, first, last],
+  )
+  return [from, to, set]
+}
+
+/** Query string carrying only settings shared across pages. */
+export function sharedSearch(params: URLSearchParams): string {
+  const gc = params.get('gc')
+  return gc ? `?gc=${encodeURIComponent(gc)}` : ''
+}

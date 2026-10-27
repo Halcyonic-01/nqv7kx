@@ -1,4 +1,5 @@
 import type { ChartOption } from '../../components/charts/EChart'
+import { crosshair, gwTick, lineKey, textStyle, tooltip, tooltipHead, tooltipRow as row, valueAxis, zeroLine } from '../../components/charts/common'
 import { type ChartTokens, alpha, animate } from '../../components/charts/theme'
 import type { DayAhead, DayRuns, Point } from '../../lib/api/client'
 import { gw, signedGw, ukTime } from '../../lib/format'
@@ -31,32 +32,8 @@ function xAxis(t: ChartTokens, start: string, hours: number) {
       margin: 10,
       formatter: (v: number) => ukTime(Date.parse(start) + v * 3_600_000),
     },
-    axisPointer: { show: true, type: 'line', snap: false, label: { show: false }, lineStyle: { color: t.muted, width: 1, type: 'solid' } },
+    axisPointer: { show: true, ...crosshair(t) },
   }
-}
-
-function textStyle(t: ChartTokens) {
-  return { fontFamily: t.font, color: t.ink2 }
-}
-
-function lineKey(color: string, dashed = false): HTMLElement {
-  const key = document.createElement('span')
-  key.style.cssText = `display:inline-block;width:12px;margin-right:8px;vertical-align:middle;border-top:2px ${dashed ? 'dashed' : 'solid'} ${color}`
-  return key
-}
-
-function row(label: string, value: string, key?: HTMLElement): HTMLElement {
-  const el = document.createElement('div')
-  el.style.cssText = 'display:flex;justify-content:space-between;gap:20px;line-height:20px'
-  const name = document.createElement('span')
-  name.style.color = 'var(--ink-2)'
-  if (key) name.append(key)
-  name.append(document.createTextNode(label))
-  const val = document.createElement('strong')
-  val.style.cssText = 'font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums'
-  val.textContent = value
-  el.append(name, val)
-  return el
 }
 
 /** Forecast vs outturn for the delivery day, with optional band, adjusted line and other runs. */
@@ -132,40 +109,28 @@ export function generationOption(day: DayAhead, runs: DayRuns | undefined, layer
     textStyle: textStyle(t),
     grid: { ...GRID_X, top: 28, bottom: 28 },
     xAxis: xAxis(t, start, hours),
-    yAxis: {
-      type: 'value',
+    yAxis: valueAxis(t, {
       min: 0,
       splitNumber: 4,
       name: 'GW',
       nameTextStyle: { color: t.muted, fontSize: 11, align: 'right', padding: [0, 6, 0, 0] },
       axisLabel: { color: t.muted, fontSize: 11, formatter: (v: number) => `${v / 1000}` },
-      splitLine: { lineStyle: { color: t.grid } },
-    },
-    tooltip: {
+    }),
+    tooltip: tooltip(t, {
       trigger: 'axis',
-      confine: true,
-      backgroundColor: t.raised,
-      borderColor: t.hairline,
-      borderWidth: 1,
-      padding: [8, 12],
-      textStyle: { color: t.ink, fontSize: 12, fontFamily: t.font },
-      extraCssText: 'border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.08);min-width:200px',
       formatter: (params: { axisValue: number }[]) => {
         const h = Math.min(Math.floor(params[0]?.axisValue ?? 0), Math.ceil(hours) - 1)
         const p = byHour.get(h)
         const box = document.createElement('div')
         if (!p) return box
-        const head = document.createElement('div')
-        head.style.cssText = 'color:var(--muted);margin-bottom:4px;font-variant-numeric:tabular-nums'
-        head.textContent = `${ukTime(p.start)}–${ukTime(Date.parse(p.start) + 3_600_000)}`
-        box.append(head, row('Forecast', gw(p.forecast_mw), lineKey(t.fc)), row('Outturn', gw(p.actual_mw), lineKey(t.act)))
+        box.append(tooltipHead(`${ukTime(p.start)}–${ukTime(Date.parse(p.start) + 3_600_000)}`), row('Forecast', gw(p.forecast_mw), lineKey(t.fc)), row('Outturn', gw(p.actual_mw), lineKey(t.act)))
         box.append(row('Error', signedGw(p.error_mw)))
         if (layers.adjusted) box.append(row('Adjusted', gw(p.adjusted_mw), lineKey(t.adj, true)))
         if (layers.band && p.band_low_mw != null && p.band_high_mw != null)
           box.append(row('P10–P90', `${(p.band_low_mw / 1000).toFixed(1)}–${gw(p.band_high_mw, 1)}`))
         return box
       },
-    },
+    }),
     series,
   }
 }
@@ -190,12 +155,10 @@ export function errorOption(day: DayAhead, t: ChartTokens): ChartOption {
     textStyle: textStyle(t),
     grid: { ...GRID_X, top: 10, bottom: 28 },
     xAxis: xAxis(t, start, hours),
-    yAxis: {
-      type: 'value',
+    yAxis: valueAxis(t, {
       splitNumber: 2,
-      axisLabel: { color: t.muted, fontSize: 11, formatter: (v: number) => `${v > 0 ? '+' : ''}${v / 1000}` },
-      splitLine: { lineStyle: { color: t.grid } },
-    },
+      axisLabel: { color: t.muted, fontSize: 11, formatter: gwTick },
+    }),
     tooltip: { trigger: 'axis', showContent: false },
     series: [
       {
@@ -203,7 +166,7 @@ export function errorOption(day: DayAhead, t: ChartTokens): ChartOption {
         barWidth: '62%',
         barMaxWidth: 18,
         data,
-        markLine: { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: t.axis, width: 1, type: 'solid' }, data: [{ yAxis: 0 }] },
+        markLine: zeroLine(t),
       },
     ],
   }

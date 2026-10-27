@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router'
+import { AccuracyPage } from '../features/accuracy/AccuracyPage'
 import { DayAheadIndex, DayAheadPage } from '../features/day-ahead/DayAheadPage'
 import { TopBar } from './TopBar'
 
@@ -24,6 +25,7 @@ export default function App() {
       <Route element={<Shell />}>
         <Route path="day-ahead" element={<DayAheadIndex />} />
         <Route path="day-ahead/:date" element={<DayAheadPage />} />
+        <Route path="accuracy" element={<AccuracyPage />} />
         <Route path="*" element={<ToDayAhead />} />
       </Route>
     </Routes>

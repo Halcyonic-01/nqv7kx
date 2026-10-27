@@ -4,7 +4,7 @@ Day-ahead wind forecast monitoring for GB. For each delivery day it shows the la
 
 **Live app:** <https://nqv7kx.vercel.app>
 
-> Status: Day-ahead view live; the Accuracy view is next.
+> Status: Day-ahead and Accuracy views live.
 
 ## Run it
 
@@ -38,6 +38,15 @@ API docs: `/api/docs` (Swagger UI), `/api/openapi.json`.
 - **Main chart:** hourly forecast against half-hourly outturn. Toggles add the P10–P90 range, the bias-adjusted line, and the other runs (solid if published before gate closure, dashed if after).
 - **Error strip:** forecast error per hour, with a crosshair linked to the main chart.
 - **Hourly data table.**
+
+**Accuracy** (`/accuracy`) answers "how far can I trust it?" over a period (the full window or any week):
+- **Headline figures:** MAE, bias with the share of over-forecast hours, P90/P99 absolute error, WAPE, and the bias-adjusted MAE on the same hours.
+- **Daily error:** bias bars plus an MAE line; click a day to open it in Day-ahead.
+- **Error by lead time:** error for forecasts published 0–48 h ahead, with the decision lead time shaded.
+- **Error distribution:** signed error histogram with P10, mean and P90 marked.
+- **Bias by forecast level.**
+- **Largest daily errors:** the worst days, each linked to its Day-ahead view.
+- **Daily data table.**
 
 All state is in the URL (`?gc=09:50&adj=1&runs=1&band=0`), so every view can be shared as a link. The ← and → keys step through days, and the neighbouring days are prefetched. The page follows the system light/dark setting.
 
@@ -113,7 +122,8 @@ All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad
 | `frontend/` | React + TypeScript (Vite) web app, nginx config and Dockerfile for the container |
 | `frontend/src/app/` | Routes, app shell, top bar (gate-closure switch, data & method popover) |
 | `frontend/src/features/day-ahead/` | Day-ahead page, chart option builders, stat strip, date picker, hourly table |
-| `frontend/src/components/` | ECharts wrapper and token-driven theme; small UI primitives |
+| `frontend/src/features/accuracy/` | Accuracy page, chart option builders, period presets, daily tables |
+| `frontend/src/components/` | ECharts wrapper, token-driven theme and shared chart chrome; UI primitives (stat row, legend, segmented control) |
 | `frontend/src/lib/` | API client and queries, generated `schema.d.ts`, formatting, time, URL state |
 | `api/index.py` | Vercel Python function entrypoint, re-exports the FastAPI app |
 | `requirements.txt` | Runtime dependencies for the Vercel function, exported from `backend/uv.lock` (`make requirements`) |

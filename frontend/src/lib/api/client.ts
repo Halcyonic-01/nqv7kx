@@ -4,6 +4,8 @@ export type DayAhead = components['schemas']['DayAhead']
 export type DayRuns = components['schemas']['DayRuns']
 export type Meta = components['schemas']['Meta']
 export type Point = components['schemas']['Point']
+export type Accuracy = components['schemas']['Accuracy']
+export type LeadTime = components['schemas']['LeadTime']
 
 export class ApiError extends Error {
   readonly status: number

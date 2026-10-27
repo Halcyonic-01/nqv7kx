@@ -1,12 +1,28 @@
 import { BarChart, LineChart } from 'echarts/charts'
-import { AxisPointerComponent, GridComponent, MarkLineComponent, TooltipComponent } from 'echarts/components'
+import {
+  AxisPointerComponent,
+  GridComponent,
+  MarkAreaComponent,
+  MarkLineComponent,
+  TooltipComponent,
+} from 'echarts/components'
 import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef } from 'react'
 
-echarts.use([LineChart, BarChart, GridComponent, TooltipComponent, AxisPointerComponent, MarkLineComponent, CanvasRenderer])
+echarts.use([
+  LineChart,
+  BarChart,
+  GridComponent,
+  TooltipComponent,
+  AxisPointerComponent,
+  MarkLineComponent,
+  MarkAreaComponent,
+  CanvasRenderer,
+])
 
 export type ChartOption = echarts.EChartsCoreOption
+export type ChartClick = { dataIndex: number; seriesName?: string }
 
 type Props = {
   option: ChartOption
@@ -15,9 +31,10 @@ type Props = {
   /** Charts in the same group share the crosshair. */
   group?: string
   className?: string
+  onClick?: (event: ChartClick) => void
 }
 
-export function EChart({ option, height, label, group, className }: Props) {
+export function EChart({ option, height, label, group, className, onClick }: Props) {
   const el = useRef<HTMLDivElement>(null)
   const chart = useRef<echarts.ECharts | null>(null)
 
@@ -42,6 +59,16 @@ export function EChart({ option, height, label, group, className }: Props) {
   useEffect(() => {
     chart.current?.setOption(option, { notMerge: true })
   }, [option])
+
+  useEffect(() => {
+    const instance = chart.current
+    if (!instance || !onClick) return
+    const handler = (e: unknown) => onClick(e as ChartClick)
+    instance.on('click', handler)
+    return () => {
+      instance.off('click', handler)
+    }
+  }, [onClick, group])
 
   return <div ref={el} role="img" aria-label={label} style={{ height }} className={className} />
 }

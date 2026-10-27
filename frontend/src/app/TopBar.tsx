@@ -1,7 +1,7 @@
 import { NavLink, useSearchParams } from 'react-router'
 import { Segmented } from '../components/ui/Segmented'
 import { useMeta } from '../lib/api/queries'
-import { useGateClosure } from '../lib/url-state'
+import { sharedSearch, useGateClosure } from '../lib/url-state'
 import { DataPopover } from './DataPopover'
 
 const FALLBACK_PRESETS = [
@@ -23,14 +23,14 @@ export function TopBar() {
   const [gateClosure, setGateClosure] = useGateClosure()
   const [params] = useSearchParams()
   const presets = meta?.gate_closures ?? FALLBACK_PRESETS
-  const search = params.toString() ? `?${params}` : ''
+  const search = sharedSearch(params)
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-page/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-3 px-4 sm:gap-6 sm:px-6">
-        <NavLink to={`/${search}`} className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
+        <NavLink to={`/${search}`} aria-label="Beaufort home" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <Mark />
-          Beaufort
+          <span className="hidden sm:inline">Beaufort</span>
         </NavLink>
         <nav className="flex items-center gap-1 text-[13px]">
           <NavLink
@@ -40,6 +40,14 @@ export function TopBar() {
             }
           >
             Day-ahead
+          </NavLink>
+          <NavLink
+            to={`/accuracy${search}`}
+            className={({ isActive }) =>
+              `whitespace-nowrap rounded-md px-2.5 py-1 ${isActive ? 'bg-hover font-medium text-ink' : 'text-ink-2 hover:text-ink'}`
+            }
+          >
+            Accuracy
           </NavLink>
         </nav>
         <div className="ml-auto flex items-center gap-3">

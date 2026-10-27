@@ -12,7 +12,7 @@ import { useGateClosure, useUrlFlag } from '../../lib/url-state'
 import { errorOption, generationOption } from './chartOptions'
 import { DayContextBar } from './DayContextBar'
 import { HourlyTable } from './HourlyTable'
-import { LegendItem } from './LegendItem'
+import { LegendItem } from '../../components/ui/LegendItem'
 import { StatStrip } from './StatStrip'
 
 function PageSkeleton() {
