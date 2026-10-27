@@ -14,3 +14,15 @@ services:
       api:
         condition: service_healthy
     restart: unless-stopped
+
+  # docker compose run --rm ingest
+  ingest:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "-m", "beaufort.ingest"]
+    environment:
+      BEAUFORT_DATA_DIR: /app/data
+    volumes:
+      - ./data:/app/data
+    profiles: ["tools"]

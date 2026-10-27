@@ -29,13 +29,37 @@ make lint
 
 API docs: `/api/docs` (Swagger UI), `/api/openapi.json`.
 
+## Data
+
+The app reads a committed snapshot, `data/beaufort.sqlite`, so it never calls Elexon at request time. Rebuild it with:
+
+```bash
+make ingest                         # or: docker compose run --rm ingest
+```
+
+The ingest:
+1. Pulls WINDFOR forecasts (runs published 29 Dec 2025 → 2 Feb 2026) and FUELHH `WIND` actuals (settlement days 31 Dec 2025 → 2 Feb 2026) from `data.elexon.co.uk/bmrs/api/v1` in 7-day chunks, retrying with backoff.
+2. Validates every row; invalid rows are counted and skipped.
+3. Dedupes and upserts the rows into SQLite.
+4. Writes `data/manifest.json`, which records the source parameters, row counts, a content hash (`data_sha256`, the same on every rebuild) and a data-quality report: missing settlement periods, runs per day, off-schedule runs.
+
+Current snapshot:
+- 20,440 forecast points (280 runs × 73 hourly points) and 1,632 half-hourly actuals.
+- No gaps.
+- One late run (15 Jan 12:25 instead of 11:30).
+
 ## Repository layout
 
 | Path | Purpose |
 |---|---|
-| `backend/` | Python package `beaufort` (FastAPI app, later ingest + analytics), tests, Dockerfile |
+| `backend/` | Python package `beaufort` (FastAPI app, ingest, later analytics), tests, Dockerfile |
 | `backend/src/beaufort/api/` | App factory and HTTP routes (`/api/v1/*`) |
-| `backend/tests/` | pytest suite |
+| `backend/src/beaufort/elexon/` | BMRS client (chunking, retries) and validated row models |
+| `backend/src/beaufort/store/` | SQLite schema, upserts, content hash |
+| `backend/src/beaufort/ingest/` | Ingest CLI, pipeline and data-quality report |
+| `backend/src/beaufort/config.py` | Data paths and the ingest window |
+| `backend/tests/` | pytest suite (Elexon API mocked with `httpx.MockTransport`) |
+| `data/` | Committed snapshot (`beaufort.sqlite`) and `manifest.json` |
 | `frontend/` | React + TypeScript (Vite) web app, nginx config and Dockerfile for the container |
 | `api/index.py` | Vercel Python function entrypoint, re-exports the FastAPI app |
 | `requirements.txt` | Runtime dependencies for the Vercel function, exported from `backend/uv.lock` (`make requirements`) |

@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-10-27T18:40:43+00:00",
+  "source": {
+    "base_url": "https://data.elexon.co.uk/bmrs/api/v1",
+    "forecast": {
+      "dataset": "WINDFOR",
+      "publish_from": "2025-12-29T00:00:00+00:00",
+      "publish_to": "2026-02-02T00:00:00+00:00"
+    },
+    "actual": {
+      "dataset": "FUELHH",
+      "fuel_type": "WIND",
+      "settlement_date_from": "2025-12-31",
+      "settlement_date_to": "2026-02-02"
+    }
+  },
+  "rows": {
+    "wind_forecast": 20440,
+    "wind_actual": 1632
+  },
+  "rejected_rows": {
+    "wind_forecast": 0,
+    "wind_actual": 0
+  },
+  "data_sha256": "647e0a48cb51b1c11ce6f2e97ad2269d1ef46d17fbdd95895c2285c2683ef67c",
+  "quality": {
+    "actuals": {
+      "expected_periods": 1632,
+      "found_periods": 1632,
+      "incomplete_days": {}
+    },
+    "forecasts": {
+      "runs": 280,
+      "points": 20440,
+      "points_per_run": {
+        "73": 280
+      },
+      "irregular_days": {},
+      "off_schedule_runs": [
+        "2026-01-15T12:25:00+00:00"
+      ],
+      "max_gap_hours": 4.0,
+      "max_lead_hours": 66.5
+    }
+  }
+}

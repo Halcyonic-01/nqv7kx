@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install dev dev-api dev-web test lint fmt requirements up down
+.PHONY: help install dev dev-api dev-web test lint fmt ingest requirements up down
 
 BACKEND := uv run --directory backend
 
@@ -32,6 +32,9 @@ lint: ## Lint and type-check everything
 fmt: ## Auto-format backend code
 	$(BACKEND) ruff format .
 	$(BACKEND) ruff check --fix .
+
+ingest: ## Rebuild data/ snapshot from the Elexon API
+	$(BACKEND) python -m beaufort.ingest
 
 requirements: ## Re-export requirements.txt (used by the Vercel Python function)
 	uv export --directory backend --no-dev --no-hashes --no-emit-project --no-header -q -o ../requirements.txt
