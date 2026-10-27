@@ -120,6 +120,7 @@ export function AccuracyPage() {
 
   return (
     <div className={`space-y-6 transition-opacity ${fetching ? 'opacity-60' : ''}`}>
+      <h1 className="sr-only">Forecast accuracy, {periodLabel(from, to)}</h1>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         <PeriodPicker first={first} last={last} from={from} to={to} onChange={setPeriod} />
         <p className="text-[13px] text-ink-2">

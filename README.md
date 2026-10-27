@@ -4,7 +4,17 @@ Day-ahead wind forecast monitoring for GB. For each delivery day it shows the la
 
 **Live app:** <https://nqv7kx.vercel.app>
 
-> Status: Day-ahead and Accuracy views live.
+![Day-ahead view: forecast at gate closure vs outturn for 12 Jan 2026](docs/screenshots/day-ahead.png)
+
+![Accuracy view: January 2026 error metrics, daily error, lead time, distribution and bias by level](docs/screenshots/accuracy.png)
+
+**What the January data shows** (09:20 gate closure, 744 delivery hours):
+- **Bias dominates.** The forecast available at gate closure overstates delivered wind by **+1.75 GW** on average (MAE 2.02 GW). It is too high in **85%** of hours, and worse at high wind: above 16 GW, outturn averages 85% of forecast.
+- **Waiting barely helps.** The 09:30 run (bidding on N2EX instead of EPEX) improves MAE by only about 1%.
+- **A simple correction helps a lot.** A trailing 7-day correction, using only data known at gate closure, cuts MAE by **35%** (2.03 → 1.33 GW).
+- **Tail risk.** P90 absolute error is 4.15 GW, which is the number to size a wind-shortfall hedge against.
+
+Details: [docs/methodology.md](docs/methodology.md) · Design: [docs/architecture.md](docs/architecture.md) · Decisions: [docs/decisions.md](docs/decisions.md)
 
 ## Run it
 
@@ -87,11 +97,7 @@ Current snapshot:
 | Bias-adjusted forecast | Forecast × Σactual/Σforecast over the previous 7 days of decision-time pairs. Uses only actuals published before gate closure, needs ≥ 72 h of history |
 | Uncertainty band | Forecast × P10/P90 of hourly actual/forecast ratios in the same trailing window |
 
-January 2026 results (09:20 gate closure, 744 delivery hours). These are pinned in `backend/tests/services/test_golden.py`.
-- **Error:** MAE 2.02 GW, RMSE 2.49 GW, bias +1.75 GW, P90 |error| 4.15 GW, WAPE 17.9%.
-- **Over-forecast:** the forecast is too high in 84.9% of hours.
-- **N2EX:** the 09:30 run lowers MAE to 1.99 GW.
-- **Bias adjustment:** MAE falls from 2.03 to 1.33 GW (−35%) over the 648 hours that have enough history.
+The January figures above are pinned as regression tests in `backend/tests/services/test_golden.py`. The full definitions, data quirks, results table and assumptions are in [docs/methodology.md](docs/methodology.md).
 
 ## API
 
@@ -104,6 +110,21 @@ All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad
 | `/api/v1/day-ahead/runs` | `delivery_date`, `gate_closure`. Every run for the day, flagged available or not at gate closure |
 | `/api/v1/accuracy` | `from`, `to`, `gate_closure`. Summary, adjusted vs raw, daily, by hour, by forecast level, histogram |
 | `/api/v1/accuracy/lead-time` | `from`, `to`, `max_h` (≤ 60) |
+
+## Testing and CI
+
+- **Backend (pytest, 53 tests):**
+  - domain unit tests, including clock-change days and the gate-closure edge cases;
+  - a Hypothesis property test of forecast selection against brute force;
+  - golden January numbers;
+  - an ingest pipeline test against a mocked Elexon API;
+  - API contract tests (problem+json errors, ETag/304).
+- **Frontend (Vitest, 13 tests):** formatting and UK-time handling, URL/period logic, and page tests with a mocked API.
+- **GitHub Actions** (`.github/workflows/ci.yml`), on every push:
+  - ruff, strict mypy and pytest;
+  - oxlint, the TypeScript build and Vitest;
+  - drift checks for `requirements.txt` and the generated API types;
+  - a Docker build plus a smoke test of the running stack.
 
 ## Repository layout
 
@@ -130,6 +151,8 @@ All endpoints are `GET` and return JSON with MW integers and UTC timestamps. Bad
 | `vercel.json` | Vercel build, function bundling and rewrites (`/api/*` → function, everything else → SPA) |
 | `docker-compose.yml` | Local production-like stack: `api` + `web` |
 | `Makefile` | Common dev commands (`make help`) |
+| `docs/` | Architecture, methodology, decision records, screenshots |
+| `.github/workflows/ci.yml` | CI: backend, frontend, API-type drift, Docker smoke test |
 
 ## Deployment
 

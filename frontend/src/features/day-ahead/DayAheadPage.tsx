@@ -39,7 +39,7 @@ function useArrowKeys(onStep: (n: number) => void) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
-      if (e.altKey || e.metaKey || e.ctrlKey || target.closest('input, textarea, [role="dialog"], [role="radiogroup"]')) return
+      if (e.altKey || e.metaKey || e.ctrlKey || target.closest('input, textarea, [role="dialog"]')) return
       if (e.key === 'ArrowLeft') onStep(-1)
       if (e.key === 'ArrowRight') onStep(1)
     }
@@ -101,6 +101,7 @@ export function DayAheadPage() {
 
   return (
     <div className={`space-y-5 transition-opacity ${fetching ? 'opacity-60' : ''}`}>
+      <h1 className="sr-only">Day-ahead forecast for delivery day {dayLabel(date)}</h1>
       <DayContextBar date={date} first={first} last={last} day={fetching ? undefined : data} onSelect={go} />
       <StatStrip day={data} />
 

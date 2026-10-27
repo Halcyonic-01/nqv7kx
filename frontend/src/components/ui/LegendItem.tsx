@@ -28,6 +28,7 @@ export function LegendItem({ label, swatch, pressed, onToggle }: Props) {
     <button
       type="button"
       aria-pressed={pressed}
+      aria-label={label}
       onClick={onToggle}
       className={`inline-flex items-center gap-2 rounded-md border px-2 py-0.5 text-[12px] transition-colors ${
         pressed ? 'border-hairline bg-raised text-ink' : 'border-transparent text-muted hover:bg-hover hover:text-ink-2'
