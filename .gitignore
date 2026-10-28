@@ -27,4 +27,5 @@ dist/
 # Private, not for the public repo
 *.docx
 IMPLEMENTATION_PLAN.md
+#ignore the script
 VIDEO_SCRIPT.md
