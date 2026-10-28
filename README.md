@@ -2,7 +2,7 @@
 
 Day-ahead wind forecast monitoring for GB. For each delivery day it shows the latest national wind forecast that was available at day-ahead gate closure, and measures how accurate those forecasts turned out to be. The data comes from Elexon BMRS: WINDFOR forecasts and FUELHH `WIND` outturn, covering purchase decisions made in January 2026.
 
-**Live app:** <https://nqv7kx.vercel.app>
+**Live app:** <https://nqv7kx.vercel.app> · **Demo video:** <https://youtu.be/bpLdn-g4hsE> (client demo, then technical walkthrough)
 
 ![Day-ahead view: forecast at gate closure vs outturn for 12 Jan 2026](docs/screenshots/day-ahead.png)
 
